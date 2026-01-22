@@ -1,5 +1,7 @@
-N = int(input())
-arr = list(float(input()) for _ in range(N))
-for i in range(1, N):
-    arr[i] = max(arr[i], arr[i] * arr[i - 1])
-print("%0.3f" % max(arr))
+n = int(input())
+lst = [float(input()) for _ in range(n)]
+
+for i in range(1, n):
+    lst[i] = max(lst[i], lst[i] * lst[i - 1])
+
+print(f'{max(lst):.3f}')
