@@ -1,7 +1,10 @@
 n = int(input())
-li = [int(input()) for _ in range(n)]
+lst = [int(input()) for _ in range(n)]
 
-li.sort()
+for i in range(n-1):
+    for j in range(n - i - 1):
+        if lst[j] > lst[j+1]:
+            lst[j], lst[j+1] = lst[j+1], lst[j]
 
-for i in li:
-    print(i)
+for k in lst:
+    print(k)
