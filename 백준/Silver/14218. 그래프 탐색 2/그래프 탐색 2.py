@@ -6,7 +6,7 @@ input = sys.stdin.readline
 
 ###################
 # 너비 우선 탐색 구현
-def bfs(s, e):
+def bfs(s):
     visited = [0] * (n + 1)
     visited[s] = 1
     q = deque([s])
@@ -14,17 +14,13 @@ def bfs(s, e):
     while q:
         curr = q.popleft()
 
-        if curr == e:
-            # 시작점 제외
-            return visited[curr] - 1
-
         for nxt in adj[curr]:
             if visited[nxt] == 0:
                 # 최단 경로 찾는거니까
                 visited[nxt] = visited[curr] + 1
                 q.append(nxt)
 
-    return -1
+    return visited
 
 
 # n: 도시의 개수, m: 도로의 개수
@@ -50,11 +46,12 @@ for i in range(q):
     adj[cities[i][1]].append(cities[i][0])
     # 각 도시별로 수도를 방문하는데 최소 방문 도시
     # 출력의 한줄 = row
-    row = []
-    for j in range(1, n + 1):
-        row.append(bfs(1, j))
+    ans.append(bfs(1))
 
-    ans.append(row)
+for row in range(q):
+    for col in range(n+1):
+        ans[row][col] -= 1
 
 for row in ans:
+    row = row[1:]
     print(*row)
