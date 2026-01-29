@@ -1,9 +1,7 @@
 from collections import deque
 
-################################################
-dx = [0, 0, -1, 1]  # 상 하 좌 우
-dy = [-1, 1, 0, 0]
 
+################################################
 
 def bfs(x, y):
     v = [0] * n  # 편의점 방문 기록
@@ -36,7 +34,7 @@ for case in range(t):
     n = int(input())
     # 집, 편의점, 페스티벌 좌표
     house_x, house_y = map(int, input().split())
-    # set, tuple로 관리
+    # tuple로 관리
     stores = [tuple(map(int, input().split())) for _ in range(n)]
     target_x, target_y = map(int, input().split())
     ################################################
