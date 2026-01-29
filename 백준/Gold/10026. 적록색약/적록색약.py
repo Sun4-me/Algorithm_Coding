@@ -1,51 +1,53 @@
-import sys
+from collections import deque
 
-input = sys.stdin.readline
-sys.setrecursionlimit(100000)
-
-dx = [1, 0, -1, 0]  # 우 하 좌 상
-dy = [0, 1, 0, -1]
+################################################
+dx = [0, 0, -1, 1]  # 상 하 좌 우
+dy = [-1, 1, 0, 0]
 
 
-def dfs(y, x):
+def bfs(y, x):
+    q = deque([(y, x)])
     visited[y][x] = 1
+    color = grid[y][x]
 
-    for direction in range(4):
-        nx = x + dx[direction]
-        ny = y + dy[direction]
-        if 0 <= nx <= n - 1 and 0 <= ny <= n - 1:
-            if visited[ny][nx] == 0 and grid[ny][nx] == color:
-                dfs(ny, nx)
+    while q:
+        cy, cx = q.popleft()
+
+        for k in range(4):
+            ny, nx = cy + dy[k], cx + dx[k]
+            if 0 <= ny < n and 0 <= nx < n:
+                if visited[ny][nx] == 0 and grid[ny][nx] == color:
+                    visited[ny][nx] = 1
+                    q.append((ny, nx))
 
 
+################################################
 n = int(input())
-grid = [list(input().rstrip()) for _ in range(n)]
+grid = [list(input()) for _ in range(n)]
+################################################
+# 적록색약이 아닌 사람 용
 visited = [[0] * n for _ in range(n)]
-
-cnt_1 = 0
+cnt1 = 0
 for row in range(n):
     for col in range(n):
-        for i in ("R", "G", "B"):
-            color = i
-
-            if visited[row][col] == 0 and grid[row][col] == color:
-                dfs(row, col)
-                cnt_1 += 1
-
-# 적록색약용
-visited = [[0] * n for _ in range(n)]
-for i in range(n):
-    for j in range(n):
-        if grid[i][j] == "G":
-            grid[i][j] = "R"
-
-cnt_2 = 0
+        if visited[row][col] == 0:
+            bfs(row, col)
+            cnt1 += 1
+################################################
+# 적록색약 용
+# 그리드의 G를 R로 바꿔버리기
 for row in range(n):
     for col in range(n):
-        for i in ("R", "B"):
-            color = i
-            if visited[row][col] == 0 and grid[row][col] == color:
-                dfs(row, col)
-                cnt_2 += 1
-                
-print(cnt_1, cnt_2)
+        if grid[row][col] == "G":
+            grid[row][col] = "R"
+visited = [[0] * n for _ in range(n)]
+
+cnt2 = 0
+for row in range(n):
+    for col in range(n):
+        if visited[row][col] == 0:
+            bfs(row, col)
+            cnt2 += 1
+################################################
+print(cnt1)
+print(cnt2)
