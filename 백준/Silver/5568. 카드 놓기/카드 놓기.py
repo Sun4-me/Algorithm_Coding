@@ -1,8 +1,6 @@
 def dfs(depth, num):
     if num and depth == k:
         ans.add(num)
-
-    if depth == n:
         return
 
     for i in range(n):
