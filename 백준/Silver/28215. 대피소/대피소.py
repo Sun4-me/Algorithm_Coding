@@ -8,7 +8,7 @@ def dfs(depth, s, lst):
     if depth == K:
         max_dist = 0
         for j in range(N):
-            min_dist = 100001
+            min_dist = 1000000
             for i in range(K):
                 min_dist = min(min_dist, dist(lst[i], houses[j]))
             max_dist = max(min_dist, max_dist)
@@ -26,6 +26,6 @@ N, K = map(int, input().split())
 # X, Y
 houses = [list(map(int, input().split())) for _ in range(N)]
 
-res = 100001
+res = 1000000
 dfs(0, 0, [])
 print(res)
