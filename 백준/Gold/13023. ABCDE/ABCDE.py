@@ -25,6 +25,9 @@ can = 0
 v[0] = 1
 
 for k in range(n):
+    if can:
+        print(1)
+        quit()
     v[k] = 1
     dfs(1, k)
     v[k] = 0
