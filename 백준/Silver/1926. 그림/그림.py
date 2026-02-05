@@ -1,27 +1,22 @@
-from collections import deque
+import sys
+
+sys.setrecursionlimit(10 ** 6)
 
 
-def bfs(y, x):
+def dfs(y, x):
+    global area
     v[y][x] = 1
-    q = deque([(y, x)])
-    area = 1
 
-    while q:
-        cy, cx = q.popleft()
-
-        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-            ny, nx = cy + dy, cx + dx
-            if 0 <= ny < n and 0 <= nx < m:
-                if grid[ny][nx] == 1 and v[ny][nx] == 0:
-                    v[ny][nx] = 1
-                    area += 1
-                    q.append((ny, nx))
-
-    return area
+    for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        ny, nx = y + dy, x + dx
+        if 0 <= ny < n and 0 <= nx < m:
+            if grid[ny][nx] == 1 and v[ny][nx] == 0:
+                area += 1
+                dfs(ny, nx)
 
 
-n, m = map(int, input().split())
-grid = [list(map(int, input().split())) for _ in range(n)]
+n, m = map(int, sys.stdin.readline().split())
+grid = [list(map(int, sys.stdin.readline().split())) for _ in range(n)]
 v = [[0] * m for _ in range(n)]
 
 cnt = 0
@@ -30,7 +25,9 @@ for row in range(n):
     for col in range(m):
         if v[row][col] == 0 and grid[row][col] == 1:
             cnt += 1
-            res = max(res, bfs(row, col))
+            area = 1
+            dfs(row, col)
+            res = max(res, area)
 
 print(cnt)
 print(res)
