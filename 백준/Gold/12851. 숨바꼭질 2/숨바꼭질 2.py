@@ -5,12 +5,15 @@ def bfs(s, e):
     v = [0] * 100_001
     v[s] = 1
     q = deque([s])
-    
+
     cnt = 0
     time = 0
 
     while q:
         curr = q.popleft()
+
+        if v[e] != 0 and v[curr] > v[e]:
+            continue
 
         if curr == e:
             if cnt == 0:
