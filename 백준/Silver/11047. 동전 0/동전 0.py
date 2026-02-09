@@ -1,14 +1,13 @@
 n, k = map(int, input().split())
-
 coins = [int(input()) for _ in range(n)]
-coins.sort(reverse=True)
 
-res = 0
-for i in coins:
-    if k >= i:
-        res += k // i
-        k %= i
-        if k <= 0:
-            break
+ans = 0
 
-print(res)
+for i in range(n - 1, -1, -1):
+    # 큰 가치 부터 작은 가치 순으로
+    count = k // coins[i]
+    # 갱신
+    k = k - (coins[i] * count)
+    ans += count
+
+print(ans)
