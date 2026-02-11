@@ -17,9 +17,11 @@ def union(x, y):
 
 n = int(input())
 edges = []
-for i in range(n):
+# 윗 대각선만 확인하자
+for i in range(n-1):
     line = list(map(int, input().split()))
-    for j in range(n):
+    # 윗 대각선만 확인하자
+    for j in range(i+1, n):
         if line[j] != 0:
             edges.append((line[j], i, j))
 
@@ -31,5 +33,6 @@ for w, s, e in edges:
     if find(s) != find(e):
         union(s, e)
         cost += w
+
 
 print(cost)
