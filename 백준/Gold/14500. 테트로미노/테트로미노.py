@@ -1,69 +1,44 @@
-# 백트래킹 절대 안될듯..?
-# 완전탐색. 시간 충분.. !
+def dfs(depth, sm, path):
+    global res
 
-teto_dict = {
-    # 짝대기
-    0: ((0, 1), (0, 2), (0, 3)),
-    1: ((1, 0), (2, 0), (3, 0)),
+    # 남은 칸이 가장 큰 값만 쏙쏙 골라 더해도 안되면 쳐내기
+    if sm + (4 - depth) * max_num <= res:
+        return
 
-    # 네모
-    2: ((0, 1), (1, 1), (1, 0)),
+    # 4칸을 다 선택했으면 return
+    if depth == 4:
+        res = max(sm, res)
+        return
 
-    # ㄱ자
-    3: ((1, 0), (2, 0), (2, 1)),
-    4: ((1, 0), (2, 0), (2, -1)),
-    5: ((0, 1), (0, 2), (1, 2)),
-    6: ((0, 1), (0, 2), (-1, 2)),
-    7: ((0, 1), (1, 1), (2, 1)),
-    8: ((0, 1), (1, 0), (2, 0)),
-    9: ((-1, 0), (-1, 1), (-1, 2)),
-    10: ((1, 0), (1, 1), (1, 2)),
+    # 모든 칸에서 상하좌우로..
+    for y, x in path:
+        for d in range(4):
+            ny, nx = y + dy[d], x + dx[d]
 
-    # --
-    #  -- 모양
-    11: ((1, 0), (1, 1), (2, 1)),
-    12: ((1, 0), (1, -1), (2, -1)),
-    13: ((0, 1), (-1, 1), (-1, 2)),
-    14: ((0, 1), (1, 1), (1, 2)),
+            if 0 <= ny < N and 0 <= nx < M:
+                if not v[ny][nx]:
+                    v[ny][nx] = True
+                    dfs(depth + 1, sm + grid[ny][nx], path + [(ny, nx)])
+                    v[ny][nx] = False
 
-    # 엿 모양
-    15: ((0, -1), (0, 1), (1, 0)),
-    16: ((-1, 0), (0, 1), (1, 0)),
-    17: ((-1, 0), (0, 1), (0, -1)),
-    18: ((0, -1), (-1, 0), (1, 0))
-}
+dx = [1, 0, -1, 0]
+dy = [0, 1, 0, -1]
+#################################################################
+N, M = map(int, input().split())
+grid = [list(map(int, input().split())) for _ in range(N)]
+v = [[False for _ in range(M)] for _ in range(N)]
+#################################################################
 
+res = 0
+max_num = 0
 
-def inb(y, x):
-    return 0 <= y < n and 0 <= x < m
+for row in grid:
+    max_num = max(max_num, max(row))
 
+for i in range(N):
+    for j in range(M):
+        v[i][j] = True
+        dfs(1, grid[i][j], [(i, j)])
+        v[i][j] = False
 
-def find_max(k):
-    """k번 도형을 통해 최대합 구하기"""
-    global max_sum
-
-    for y in range(n):
-        for x in range(m):
-            cy, cx = y, x
-            now_sum = grid[cy][cx]
-
-            for dy, dx in teto_dict[k]:
-                ny, nx = cy + dy, cx + dx
-                if inb(ny, nx):
-                    now_sum += grid[ny][nx]
-                else:
-                    break
-            else:
-                max_sum = max(max_sum, now_sum)
-
-
-##########################################################
-n, m = map(int, input().split())
-grid = [list(map(int, input().split())) for _ in range(n)]
-##########################################################
-max_sum = 0
-
-for i in range(19):
-    find_max(i)
-
-print(max_sum)
+print(res)
