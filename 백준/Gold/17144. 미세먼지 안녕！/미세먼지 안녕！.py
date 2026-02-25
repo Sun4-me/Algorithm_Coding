@@ -47,59 +47,56 @@ def up_work():
     """위쪽  공기 청정기 작동 | 반시계 방향"""
     cy, cx = up_cleaner
 
-    # 왼쪽면
-    for y in range(cy - 1, -1, -1):
-        # 공기 청정기로 들어오는 것
-        if y == cy - 1:
-            tmp_grid[y][0] = 0
+    # 우 상 좌 하
+    dy = [0, -1, 0, 1]
+    dx = [1, 0, -1, 0]
 
-        else:
-            tmp_grid[y + 1][0] = tmp_grid[y][0]
-            tmp_grid[y][0] = 0
+    y, x = cy, 1  # 공기청정기 바로 오른쪽 칸부터 시작
+    prev_val = 0  # 공기청정기에서 나오는 깨끗한 공기
 
-    # 위쪽 면
-    for x in range(M - 1):
-        tmp_grid[0][x] = tmp_grid[0][x + 1]
+    for k in range(4):
+        while True:
+            ny, nx = y + dy[k], x + dx[k]
 
-    # 오른쪽 면
-    for y in range(cy):
-        tmp_grid[y][-1] = tmp_grid[y + 1][-1]
+            # 위쪽 공기청정기 영역 제한 (0 <= ny <= cy)
+            if not (0 <= ny <= cy and 0 <= nx < M):
+                break
 
-    # 맨 아래 면
-    for x in range(M - 1, 1, -1):
-        tmp_grid[cy][x] = tmp_grid[cy][x - 1]
+            # 공기청정기로 돌아왔을 때, 마지막 칸(현재 y, x)을 업데이트하고 종료
+            if (ny, nx) == (cy, cx):
+                tmp_grid[y][x], prev_val = prev_val, tmp_grid[y][x]
+                break
 
-    # 공청기 바로 오른쪽 부분 0 처리
-    tmp_grid[cy][1] = 0
+            tmp_grid[y][x], prev_val = prev_val, tmp_grid[y][x]
+            y, x = ny, nx
 
 
 def down_work():
     """ 아래쪽 공기 청정기 작동 | 시계 방향"""
     cy, cx = down_cleaner
 
-    # 왼쪽면
-    for y in range(cy + 1, N):
-        # 공기 청정기로 들어오는 것
-        if y == cy + 1:
-            tmp_grid[y][0] = 0
+    # 우 하 좌 상
+    dy = [0, 1, 0, -1]
+    dx = [1, 0, -1, 0]
 
-        else:
-            tmp_grid[y - 1][0] = tmp_grid[y][0]
+    y, x = cy, 1  # 공기청정기 바로 오른쪽 칸부터 시작
+    prev_val = 0  # 공기청정기에서 나오는 깨끗한 공기
 
-    # 맨 아랫면
-    for x in range(M - 1):
-        tmp_grid[-1][x] = tmp_grid[-1][x + 1]
+    for k in range(4):
+        while True:
+            ny, nx = y + dy[k], x + dx[k]
 
-    # 오른쪽 면
-    for y in range(N - 1, cy, -1):
-        tmp_grid[y][-1] = tmp_grid[y - 1][-1]
+            # 아래쪽 공기청정기 영역 제한 (cy <= ny < N)
+            if not (cy <= ny < N and 0 <= nx < M):
+                break
 
-    # 맨 윗 면
-    for x in range(M - 1, 1, -1):
-        tmp_grid[cy][x] = tmp_grid[cy][x - 1]
+            # 공기청정기로 돌아왔을 때, 마지막 칸(현재 y, x)을 업데이트하고 종료
+            if (ny, nx) == (cy, cx):
+                tmp_grid[y][x], prev_val = prev_val, tmp_grid[y][x]
+                break
 
-    # 공청기 바로 오른쪽 부분 0 처리
-    tmp_grid[cy][1] = 0
+            tmp_grid[y][x], prev_val = prev_val, tmp_grid[y][x]
+            y, x = ny, nx
 
 
 ###########################################################
