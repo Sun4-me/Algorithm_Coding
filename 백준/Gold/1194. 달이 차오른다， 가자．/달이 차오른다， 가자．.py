@@ -3,43 +3,43 @@ from collections import deque
 
 def bfs():
     v = [[{} for _ in range(M)] for _ in range(N)]
-    v[sy][sx][(0,)] = 1
-    q = deque([(sy, sx, (0,))])
+    
+    start_key = frozenset()
+    v[sy][sx][start_key] = 1
+    q = deque([(sy, sx, start_key)])
 
     while q:
         cy, cx, c_key = q.popleft()
 
+        if grid[cy][cx] == '1':
+            return v[cy][cx][c_key] - 1
+
         for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             ny, nx = cy + dy, cx + dx
-            if 0 <= ny < N and 0 <= nx < M:
-                if grid[ny][nx] == "#":
-                    continue
 
-                if grid[ny][nx] in ('a', 'b', 'c', 'd', 'e', 'f'):
-                    if grid[ny][nx] not in c_key:
-                        n_key = c_key + (grid[ny][nx],)
-                        if n_key not in v[ny][nx].keys():
-                            v[ny][nx][n_key] = v[cy][cx][c_key] + 1
-                            q.append((ny, nx, n_key))
+            if 0 <= ny < N and 0 <= nx < M and grid[ny][nx] != "#":
+                char = grid[ny][nx]
 
-                    else:
-                        if c_key not in v[ny][nx].keys():
+                # 1. 열쇠를 만났을 때 ('a' ~ 'f')
+                if char.islower():
+                    n_key = c_key | frozenset([char])
+
+                    if n_key not in v[ny][nx]:
+                        v[ny][nx][n_key] = v[cy][cx][c_key] + 1
+                        q.append((ny, nx, n_key))
+
+                # 2. 문을 만났을 때 ('A' ~ 'F')
+                elif char.isupper():
+                    if char.lower() in c_key:
+                        if c_key not in v[ny][nx]:
                             v[ny][nx][c_key] = v[cy][cx][c_key] + 1
                             q.append((ny, nx, c_key))
 
-                elif grid[ny][nx] in ('A', 'B', 'C', 'D', 'E', 'F'):
-                    if grid[ny][nx].lower() in c_key:
-                        if c_key not in v[ny][nx].keys():
-                            v[ny][nx][c_key] = v[cy][cx][c_key] + 1
-                            q.append((ny, nx, c_key))
-
-                elif grid[ny][nx] == '.':
-                    if c_key not in v[ny][nx].keys():
+                # 3. 빈 공간('.')이나 출구('1')를 만났을 때
+                else:
+                    if c_key not in v[ny][nx]:
                         v[ny][nx][c_key] = v[cy][cx][c_key] + 1
                         q.append((ny, nx, c_key))
-
-                elif grid[ny][nx] == '1':
-                    return v[cy][cx][c_key]
 
     return -1
 
