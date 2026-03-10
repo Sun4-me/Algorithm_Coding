@@ -1,61 +1,95 @@
-def back(depth, sm):
-    global best
+import sys
 
-    # 1. 가지치기: 남은 기회 동안 전부 40점을 받아도 최고점을 넘지 못하면 종료
-    if sm + (10 - depth) * 40 <= best:
+def solve():
+    # 빠른 입력 처리
+    input_data = sys.stdin.read().split()
+    if not input_data:
         return
-
-    # 2. 종료 조건: 10번의 턴을 모두 마침
-    if depth == 10:
-        if sm > best:
-            best = sm
-        return
-
-    used_pos = set()  # ★ 최적화 2: 이번 턴에 출발했던 위치를 기록해 중복 탐색 방지
-
-    for k in range(4):
-        curr = temp[k]
+    dice = tuple(map(int, input_data))
+    
+    # 노드별 점수 하드코딩 (0~32번 노드)
+    # 0: 시작, 1~20: 붉은색 외곽 경로, 21: 도착점
+    # 22~24: 10에서 시작하는 파란색 경로 (13, 16, 19)
+    # 25~26: 20에서 시작하는 파란색 경로 (22, 24)
+    # 27~29: 30에서 시작하는 파란색 경로 (28, 27, 26)
+    # 30~32: 중앙 교차점 이후 경로 (25, 30, 35)
+    SCORES = (0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 0, 13, 16, 19, 22, 24, 28, 27, 26, 25, 30, 35)
+    
+    # 노드별 기본 다음 이동 위치
+    ADJ = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 21, 23, 24, 30, 26, 30, 28, 29, 30, 31, 32, 20)
+    
+    # DEST[node][roll]: node에서 주사위 roll이 나왔을 때의 최종 도착 노드 사전 계산
+    dest_temp = [[0] * 6 for _ in range(33)]
+    for i in range(33):
+        for r in range(1, 6):
+            curr = i
+            for step in range(r):
+                # 이동 첫 걸음이고, 파란색 노드(5, 10, 15번)에서 시작했다면 파란색 경로로 진입
+                if step == 0:
+                    if curr == 5: curr = 22
+                    elif curr == 10: curr = 25
+                    elif curr == 15: curr = 27
+                    else: curr = ADJ[curr]
+                else:
+                    curr = ADJ[curr]
+            dest_temp[i][r] = curr
+    
+    # 접근 속도 향상을 위해 튜플로 변환
+    DEST = tuple(tuple(row) for row in dest_temp)
+    
+    # 상태를 리스트 대신 인자로 풀어 전달 (p0, p1, p2, p3)
+    def dfs(turn, current_score, v_mask, p0, p1, p2, p3):
+        if turn == 10:
+            return current_score
         
-        # 이미 도착했거나, 이번 턴에 동일한 위치에서 출발해 본 적이 있다면 패스
-        if curr == 32 or curr in used_pos: 
-            continue
-            
-        nxt = dict[curr][dice[depth]]
+        roll = dice[turn]
+        res = current_score
         
-        # ★ 최적화 1: 도착 지점이 아니고, 이동할 칸(nxt)에 이미 다른 말이 있다면 패스
-        if nxt != 32 and nxt in temp: 
-            continue
+        # 1번 말(p0) 이동
+        if p0 != 21:
+            nxt = DEST[p0][roll]
+            # 도착점이거나(21), 이동하려는 곳에 다른 말이 없다면(비트마스크 확인)
+            if nxt == 21 or not (v_mask & (1 << nxt)):
+                n_mask = v_mask
+                if p0 != 0: n_mask &= ~(1 << p0)  # 기존 위치 비트 해제
+                if nxt != 21: n_mask |= (1 << nxt) # 새 위치 비트 설정
+                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, nxt, p1, p2, p3)
+                if r > res: res = r
+        
+        # 2번 말(p1) 이동: 앞선 말이 시작점(0)을 떠났을 때만 이동 (중복 상태 제거)
+        if p1 != 21 and p1 != p0:
+            nxt = DEST[p1][roll]
+            if nxt == 21 or not (v_mask & (1 << nxt)):
+                n_mask = v_mask
+                if p1 != 0: n_mask &= ~(1 << p1)
+                if nxt != 21: n_mask |= (1 << nxt)
+                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, p0, nxt, p2, p3)
+                if r > res: res = r
+                
+        # 3번 말(p2) 이동
+        if p2 != 21 and p2 != p0 and p2 != p1:
+            nxt = DEST[p2][roll]
+            if nxt == 21 or not (v_mask & (1 << nxt)):
+                n_mask = v_mask
+                if p2 != 0: n_mask &= ~(1 << p2)
+                if nxt != 21: n_mask |= (1 << nxt)
+                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, p0, p1, nxt, p3)
+                if r > res: res = r
+                
+        # 4번 말(p3) 이동
+        if p3 != 21 and p3 != p0 and p3 != p1 and p3 != p2:
+            nxt = DEST[p3][roll]
+            if nxt == 21 or not (v_mask & (1 << nxt)):
+                n_mask = v_mask
+                if p3 != 0: n_mask &= ~(1 << p3)
+                if nxt != 21: n_mask |= (1 << nxt)
+                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, p0, p1, p2, nxt)
+                if r > res: res = r
+                
+        return res
 
-        used_pos.add(curr)  # 현재 위치에서 이동해 보았음을 기록
+    # 턴, 현재 점수, 방문 비트마스크, 말 4개의 초기 위치(0)
+    print(dfs(0, 0, 0, 0, 0, 0, 0))
 
-        # 상태 변경 및 재귀 호출
-        temp[k] = nxt
-        back(depth + 1, sm + score[nxt])
-        temp[k] = curr      # 상태 복원
-
-
-dice = list(map(int, input().split()))
-dict = {
-    0: [0, 1, 2, 3, 4, 5], 1: [0, 2, 3, 4, 5, 6], 2: [0, 3, 4, 5, 6, 7], 
-    3: [0, 4, 5, 6, 7, 8], 4: [0, 5, 6, 7, 8, 9], 5: [0, 21, 22, 23, 24, 28], 
-    6: [0, 7, 8, 9, 10, 11], 7: [0, 8, 9, 10, 11, 12], 8: [0, 9, 10, 11, 12, 13], 
-    9: [0, 10, 11, 12, 13, 14], 10: [0, 30, 31, 24, 28, 29], 11: [0, 12, 13, 14, 15, 16], 
-    12: [0, 13, 14, 15, 16, 17], 13: [0, 14, 15, 16, 17, 18], 14: [0, 15, 16, 17, 18, 19], 
-    15: [0, 27, 26, 25, 24, 28], 16: [0, 17, 18, 19, 20, 32], 17: [0, 18, 19, 20, 32, 32], 
-    18: [0, 19, 20, 32, 32, 32], 19: [0, 20, 32, 32, 32, 32], 20: [0, 32, 32, 32, 32, 32], 
-    21: [0, 22, 23, 24, 28, 29], 22: [0, 23, 24, 28, 29, 20], 23: [0, 24, 28, 29, 20, 32], 
-    24: [0, 28, 29, 20, 32, 32], 25: [0, 24, 28, 29, 20, 32], 26: [0, 25, 24, 28, 29, 20], 
-    27: [0, 26, 25, 24, 28, 29], 28: [0, 29, 20, 32, 32, 32], 29: [0, 20, 32, 32, 32, 32], 
-    30: [0, 31, 24, 28, 29, 20], 31: [0, 24, 28, 29, 20, 32]
-}
-score = {
-    0: 0, 1: 2, 2: 4, 3: 6, 4: 8, 5: 10, 6: 12, 7: 14, 8: 16, 9: 18, 10: 20, 
-    11: 22, 12: 24, 13: 26, 14: 28, 15: 30, 16: 32, 17: 34, 18: 36, 19: 38, 
-    20: 40, 21: 13, 22: 16, 23: 19, 24: 25, 25: 26, 26: 27, 27: 28, 28: 30, 
-    29: 35, 30: 22, 31: 24, 32: 0
-}
-
-best = -1
-temp = [0, 0, 0, 0]
-back(0, 0)
-print(best)
+if __name__ == '__main__':
+    solve()
