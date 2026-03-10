@@ -1,95 +1,108 @@
 import sys
 
 def solve():
-    # 빠른 입력 처리
+    # 빠른 입력
     input_data = sys.stdin.read().split()
     if not input_data:
         return
     dice = tuple(map(int, input_data))
-    
-    # 노드별 점수 하드코딩 (0~32번 노드)
-    # 0: 시작, 1~20: 붉은색 외곽 경로, 21: 도착점
-    # 22~24: 10에서 시작하는 파란색 경로 (13, 16, 19)
-    # 25~26: 20에서 시작하는 파란색 경로 (22, 24)
-    # 27~29: 30에서 시작하는 파란색 경로 (28, 27, 26)
-    # 30~32: 중앙 교차점 이후 경로 (25, 30, 35)
-    SCORES = (0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 0, 13, 16, 19, 22, 24, 28, 27, 26, 25, 30, 35)
-    
-    # 노드별 기본 다음 이동 위치
-    ADJ = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 21, 23, 24, 30, 26, 30, 28, 29, 30, 31, 32, 20)
-    
-    # DEST[node][roll]: node에서 주사위 roll이 나왔을 때의 최종 도착 노드 사전 계산
-    dest_temp = [[0] * 6 for _ in range(33)]
-    for i in range(33):
-        for r in range(1, 6):
-            curr = i
-            for step in range(r):
-                # 이동 첫 걸음이고, 파란색 노드(5, 10, 15번)에서 시작했다면 파란색 경로로 진입
-                if step == 0:
-                    if curr == 5: curr = 22
-                    elif curr == 10: curr = 25
-                    elif curr == 15: curr = 27
-                    else: curr = ADJ[curr]
-                else:
-                    curr = ADJ[curr]
-            dest_temp[i][r] = curr
-    
-    # 접근 속도 향상을 위해 튜플로 변환
-    DEST = tuple(tuple(row) for row in dest_temp)
-    
-    # 상태를 리스트 대신 인자로 풀어 전달 (p0, p1, p2, p3)
-    def dfs(turn, current_score, v_mask, p0, p1, p2, p3):
-        if turn == 10:
-            return current_score
-        
-        roll = dice[turn]
-        res = current_score
-        
-        # 1번 말(p0) 이동
-        if p0 != 21:
-            nxt = DEST[p0][roll]
-            # 도착점이거나(21), 이동하려는 곳에 다른 말이 없다면(비트마스크 확인)
-            if nxt == 21 or not (v_mask & (1 << nxt)):
-                n_mask = v_mask
-                if p0 != 0: n_mask &= ~(1 << p0)  # 기존 위치 비트 해제
-                if nxt != 21: n_mask |= (1 << nxt) # 새 위치 비트 설정
-                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, nxt, p1, p2, p3)
-                if r > res: res = r
-        
-        # 2번 말(p1) 이동: 앞선 말이 시작점(0)을 떠났을 때만 이동 (중복 상태 제거)
-        if p1 != 21 and p1 != p0:
-            nxt = DEST[p1][roll]
-            if nxt == 21 or not (v_mask & (1 << nxt)):
-                n_mask = v_mask
-                if p1 != 0: n_mask &= ~(1 << p1)
-                if nxt != 21: n_mask |= (1 << nxt)
-                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, p0, nxt, p2, p3)
-                if r > res: res = r
-                
-        # 3번 말(p2) 이동
-        if p2 != 21 and p2 != p0 and p2 != p1:
-            nxt = DEST[p2][roll]
-            if nxt == 21 or not (v_mask & (1 << nxt)):
-                n_mask = v_mask
-                if p2 != 0: n_mask &= ~(1 << p2)
-                if nxt != 21: n_mask |= (1 << nxt)
-                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, p0, p1, nxt, p3)
-                if r > res: res = r
-                
-        # 4번 말(p3) 이동
-        if p3 != 21 and p3 != p0 and p3 != p1 and p3 != p2:
-            nxt = DEST[p3][roll]
-            if nxt == 21 or not (v_mask & (1 << nxt)):
-                n_mask = v_mask
-                if p3 != 0: n_mask &= ~(1 << p3)
-                if nxt != 21: n_mask |= (1 << nxt)
-                r = dfs(turn + 1, current_score + SCORES[nxt], n_mask, p0, p1, p2, nxt)
-                if r > res: res = r
-                
-        return res
 
-    # 턴, 현재 점수, 방문 비트마스크, 말 4개의 초기 위치(0)
-    print(dfs(0, 0, 0, 0, 0, 0, 0))
+    # 읽기 전용 데이터는 모두 Tuple로 선언하여 속도 극대화
+    SCORE = (
+        0, 2, 4, 6, 8, 10,
+        12, 14, 16, 18, 20,
+        22, 24, 26, 28, 30,
+        32, 34, 36, 38, 40,
+        13, 16, 19,
+        22, 24,
+        28, 27, 26,
+        25, 30, 35,
+        0
+    )
+
+    nxt = (
+        1, 2, 3, 4, 5, 6,
+        7, 8, 9, 10, 11,
+        12, 13, 14, 15, 16,
+        17, 18, 19, 20, 32,
+        22, 23, 29,
+        25, 29,
+        27, 28, 29,
+        30, 31, 20,
+        32
+    )
+
+    blue = [0] * 33
+    blue[5], blue[10], blue[15] = 21, 24, 26
+
+    # 2차원 배열 대신 1차원 리스트로 메모리 할당 (크기: 33 * 6)
+    MOVE_list = [0] * 198  
+    for i in range(33):
+        for d in range(1, 6):
+            x = i
+            step = d
+            if x != 32:
+                if blue[x]:
+                    x = blue[x]
+                    step -= 1
+                else:
+                    x = nxt[x]
+                    step -= 1
+                while step and x != 32:
+                    x = nxt[x]
+                    step -= 1
+            # 2차원 인덱스를 1차원으로 변환 (i * 6 + d)
+            MOVE_list[i * 6 + d] = x
+            
+    # 완성된 1차원 리스트를 Tuple로 고정하여 접근 속도 부스팅
+    MOVE = tuple(MOVE_list)
+
+    ans = 0
+
+    # 상태를 리스트 대신 4개의 로컬 변수(p0, p1, p2, p3)로 언롤링
+    def dfs(depth, total, p0, p1, p2, p3):
+        nonlocal ans # 전역 변수 대신 nonlocal 사용으로 스코프 탐색 최적화
+        
+        # 적용하신 완벽한 A* 휴리스틱 가지치기
+        if total + 40 * (10 - depth) <= ans:
+            return
+            
+        if depth == 10:
+            # 가지치기를 통과하여 여기까지 왔다면 무조건 total > ans 임이 보장됨
+            # max() 함수 호출 생략
+            ans = total 
+            return
+            
+        d = dice[depth]
+        
+        # 0번 말 이동
+        if p0 != 32:
+            nx = MOVE[p0 * 6 + d]
+            # 도착했거나, 다른 말이 그 자리에 없는 경우
+            if nx == 32 or (nx != p1 and nx != p2 and nx != p3):
+                dfs(depth + 1, total + SCORE[nx], nx, p1, p2, p3)
+                
+        # 1번 말 이동 (대칭성 제거: p1 != p0)
+        if p1 != 32 and p1 != p0:
+            nx = MOVE[p1 * 6 + d]
+            if nx == 32 or (nx != p0 and nx != p2 and nx != p3):
+                dfs(depth + 1, total + SCORE[nx], p0, nx, p2, p3)
+                
+        # 2번 말 이동 (대칭성 제거: p2 != p0 and p2 != p1)
+        if p2 != 32 and p2 != p0 and p2 != p1:
+            nx = MOVE[p2 * 6 + d]
+            if nx == 32 or (nx != p0 and nx != p1 and nx != p3):
+                dfs(depth + 1, total + SCORE[nx], p0, p1, nx, p3)
+                
+        # 3번 말 이동 (대칭성 제거: p3 != p0, p1, p2)
+        if p3 != 32 and p3 != p0 and p3 != p1 and p3 != p2:
+            nx = MOVE[p3 * 6 + d]
+            if nx == 32 or (nx != p0 and nx != p1 and nx != p2):
+                dfs(depth + 1, total + SCORE[nx], p0, p1, p2, nx)
+
+    # 시작 상태
+    dfs(0, 0, 0, 0, 0, 0)
+    print(ans)
 
 if __name__ == '__main__':
     solve()
