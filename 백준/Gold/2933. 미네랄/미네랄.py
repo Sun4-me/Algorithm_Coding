@@ -34,7 +34,9 @@ def bfs(y, x):
         for y, x in coord:
             grid[y + max_y][x] = 'x'
 
-        
+        return True
+
+    return False
 
 
 def find_h(coord, y, x):
@@ -90,7 +92,8 @@ for h in height:
         if 0 <= ny < R and 0 <= nx < C:
             if grid[ny][nx] == 'x':
                 if v[ny][nx] == 0:
-                    bfs(ny, nx)
+                    if bfs(ny, nx):
+                        break
 
 for row in grid:
     print(*row, sep="")
