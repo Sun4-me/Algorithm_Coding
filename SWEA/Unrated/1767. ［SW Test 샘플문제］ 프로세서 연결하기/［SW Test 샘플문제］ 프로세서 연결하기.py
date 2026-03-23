@@ -68,6 +68,9 @@ def masking(y, x, k, num):
 def dfs(depth, idx, cnt, sm):
     global max_cnt, min_length
 
+    if cnt + core_length - depth < max_cnt:
+        return
+
     if depth == core_length:
 
         if cnt > max_cnt:
@@ -101,9 +104,6 @@ for case in range(1, T + 1):
 
     core = []
     core_direct = []
-
-
-
 
     make_core()
 
