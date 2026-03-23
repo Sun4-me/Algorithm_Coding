@@ -1,7 +1,5 @@
 def fib(n):
-    global cnt1
     if n == 1 or n == 2:
-        cnt1 += 1
         return 1
     else:
         return fib(n - 1) + fib(n - 2)
@@ -18,7 +16,6 @@ n = int(input())
 f = [0] * (n + 1)
 cnt1 = cnt2 = 0
 
-fib(n)
-fibonacci(n)
+cnt1 = fibonacci(n)
 
 print(cnt1, cnt2)
