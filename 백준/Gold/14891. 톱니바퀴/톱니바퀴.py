@@ -12,7 +12,7 @@ k = int(input())
 # 회전 시킨 톱니의 번호 | 방향 1이면 시계, -1 이면 반시계
 nodes = [list(map(int, input().split())) for _ in range(k)]
 
-
+# 빙글 돌려버리는 함수
 def bingle(num, direct):
     num = num - 1
     if direct == 1:  # 시계 방향
@@ -20,7 +20,7 @@ def bingle(num, direct):
     else:  # 반시계 방향
         topnis[num].append(topnis[num].popleft())
 
-
+# 회전할지 말지 체크하는 함수
 def check(left, right):
     if topnis[left - 1][2] == topnis[right - 1][6]:
         return False
@@ -29,19 +29,22 @@ def check(left, right):
 
 
 for i in nodes:
+    # 번호 , 방향
     num, direct = i[0], i[1]
+    # 반대 방향 저장
     diret_reverse = -1 if direct == 1 else 1
     if num == 1:
+        # 동시에 도는거니까 돌리기전에 미리 확인
         topni_12 = check(1, 2)
         topni_23 = check(2, 3)
         topni_34 = check(3, 4)
-
+        # 2번이 돌수있다면 돌림
         if topni_12:
             bingle(2, diret_reverse)
-
+        # 2번이 돌수있고 3번이 돌수있다면 돌림
         if topni_12 and topni_23:
             bingle(3, direct)
-
+        # 2번이 돌 수 있고 3번이 돌 수 있고 4번이 돌 수 있으면 돌림
         if topni_12 and topni_23 and topni_34:
             bingle(4, diret_reverse)
 
